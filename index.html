@@ -116,6 +116,15 @@ ol.log .bad{color:var(--danger)} ol.log .on{color:var(--live)}
 #ladder{display:flex;flex-direction:column;gap:12px}
 .pill.wpwr{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,transparent);margin-left:4px}
 .pill.wctl{color:var(--ctl);border-color:color-mix(in srgb,var(--ctl) 45%,transparent);margin-left:4px}
+.chg{fill:none;stroke-width:3.4;stroke-linecap:round;stroke-dasharray:0.1 5.2}
+.chg.shut{stroke:var(--live)}
+.chg.open{stroke:var(--danger)}
+.chcap{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin:4px 0 0}
+.chres{border-radius:6px;padding:10px 12px;font-size:14.5px;display:flex;flex-direction:column;gap:6px}
+.chres.ok{background:color-mix(in srgb,var(--live) 14%,transparent);border:1px solid color-mix(in srgb,var(--live) 45%,transparent)}
+.chres.bad{background:color-mix(in srgb,var(--danger) 10%,transparent);border:1px solid color-mix(in srgb,var(--danger) 40%,transparent)}
+.chres p{margin:0}
+.chres b.okc{color:var(--live)} .chres b.badc{color:var(--danger)}
 .mlink{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:6 4}
 .nd{fill:var(--node);stroke:var(--node);stroke-width:1}
 .dim{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
@@ -135,6 +144,10 @@ ol.log .bad{color:var(--danger)} ol.log .on{color:var(--live)}
   padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .warnbox{background:var(--panel);color:var(--ink);border:2px solid var(--danger);border-radius:8px;max-width:520px;width:100%;padding:18px 20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.35);animation:pop .18s ease-out}
 .wmodal[hidden]{display:none}
+.flash{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 45%,#fffbe8 0%,#ffe08a 45%,#ff8a3d 100%)}
+.flash.go{animation:flash .85s ease-out}
+@keyframes flash{0%{opacity:0}6%{opacity:.95}18%{opacity:.25}28%{opacity:.85}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.flash.go{animation:flashSoft .6s ease-out}@keyframes flashSoft{0%{opacity:.35}100%{opacity:0}}}
 .smoke circle{transform-box:fill-box;transform-origin:center;fill:#9aa0a6;opacity:.0;animation:smoke 1.8s ease-out infinite}
 .smoke circle:nth-child(2){animation-delay:.6s}.smoke circle:nth-child(3){animation-delay:1.2s}
 .board-smoke circle{fill:#c3c7cc;animation:smokeB 2.4s ease-out infinite}
@@ -147,6 +160,8 @@ ol.log .bad{color:var(--danger)} ol.log .on{color:var(--live)}
 .warnhead{display:flex;gap:10px;align-items:center}
 .warnhead h2{font-size:22px;color:var(--danger)}
 .warnbox.coil{border-color:var(--ctl)}
+.warnbox.good{border-color:var(--live)}
+.warnbox.good .warnhead h2{color:var(--live)}
 .warnbox.coil .warnhead h2{color:var(--ctl)}
 .warnbox #warnMsg{display:flex;flex-direction:column;gap:10px}
 .calc{font-family:var(--f-mono);font-size:14px;background:var(--chip);border:1px solid var(--line);border-radius:4px;padding:1px 6px;white-space:nowrap}
@@ -190,9 +205,10 @@ ol.wires button:hover{color:var(--danger);border-color:var(--danger)}
   <p>Patch the 120 V power circuit and the 24 V control circuit, then run it.</p>
 </header>
 
+<div class="flash" id="flash" aria-hidden="true"></div>
 <div class="wmodal" id="warn" hidden>
   <div class="warnbox" role="alertdialog" aria-modal="true" aria-labelledby="warnTitle" aria-describedby="warnMsg">
-    <div class="warnhead"><svg id="icWarn" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12 2L23 21H1Z" fill="var(--danger)"/><path d="M12 9v5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.5" r="1.4" fill="#fff"/></svg><svg id="icCoil" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--ctl)"/><path d="M5 13.5a2 2 0 0 1 3.5-1.3a2 2 0 0 1 3.5 0a2 2 0 0 1 3.5 0a2 2 0 0 1 3.5 1.3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M5 8h14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg><h2 id="warnTitle"></h2></div>
+    <div class="warnhead"><svg id="icWarn" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12 2L23 21H1Z" fill="var(--danger)"/><path d="M12 9v5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.5" r="1.4" fill="#fff"/></svg><svg id="icGood" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--live)"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><svg id="icCoil" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--ctl)"/><path d="M5 13.5a2 2 0 0 1 3.5-1.3a2 2 0 0 1 3.5 0a2 2 0 0 1 3.5 0a2 2 0 0 1 3.5 1.3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M5 8h14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg><h2 id="warnTitle"></h2></div>
     <div id="warnMsg"></div>
     <div class="row" style="justify-content:flex-end"><button class="btn" id="warnNever" type="button">Don't show this again</button><button class="btn alarm" id="warnOk" type="button">OK</button></div>
   </div>
@@ -231,6 +247,28 @@ ol.wires button:hover{color:var(--danger);border-color:var(--danger)}
       </div>
     </section>
 
+    <section class="card" id="chCard">
+      <h2>Diagram reading</h2>
+      <p class="hint">Get a random ladder diagram with a 24 V control circuit (pushbuttons, relay contacts, coils) and a 120 V power circuit (relay contacts and lamps). Wire it on the board, then check it. The check runs the pushbuttons through every press-and-release sequence and compares your board with the diagram.</p>
+      <label class="lbl" for="chLevel">Difficulty</label>
+      <select id="chLevel">
+        <option value="1">Level 1 · Basic: one relay, one or two lamps</option>
+        <option value="2">Level 2 · More components: two relays, seal-in, series and parallel</option>
+        <option value="3">Level 3 · Lots of components: three relays, interlocking pushbuttons</option>
+      </select>
+      <div class="row">
+        <button class="btn on" id="chNew" type="button">New random diagram</button>
+        <button class="btn" id="chCheck" type="button" disabled>Check my wiring</button>
+        <button class="btn" id="chEnd" type="button" disabled>End practice</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="chHide" checked> Hide the live ladder diagram while practising</label>
+      <div id="chBody" hidden>
+        <p class="cap chcap" id="chTitle"></p>
+        <div id="chDiagram"></div>
+        <div id="chResult" class="chres" hidden></div>
+      </div>
+    </section>
+
     <section class="card">
       <h2>Supply</h2>
       <div class="row">
@@ -246,6 +284,7 @@ ol.wires button:hover{color:var(--danger);border-color:var(--danger)}
     <section class="card ladder">
       <h2>Ladder diagram</h2>
       <p class="hint">Drawn from the cords on the board: 120 V source and power circuit on top, transformer T1, then the 24 V control circuit. Each new cord adds its part of the circuit; the parts touched by the latest cord are highlighted, and red circles mark open ends.</p>
+      <p class="hint"><b style="color:var(--live)">Green dotted</b> line: a normally open contact that is now closed. <b style="color:var(--danger)">Red dotted</b> line: a normally closed contact that is now open.</p>
       <div id="ladder"></div>
     </section>
 
@@ -599,9 +638,9 @@ function showModal(kind,title,html,after){
   modalKind=kind;onClose=after||null;
   el('warnTitle').textContent=title;el('warnMsg').innerHTML=html;
   el('warn').querySelector('.warnbox').className='warnbox '+kind;
-  el('icWarn').style.display=kind==='warn'?'':'none';el('icCoil').style.display=kind==='coil'?'':'none';
+  el('icWarn').style.display=kind==='warn'?'':'none';el('icCoil').style.display=kind==='coil'?'':'none';el('icGood').style.display=kind==='good'?'':'none';
   el('warnNever').hidden=kind!=='coil';el('warnOk').textContent=kind==='coil'?'OK, change the contacts':'OK';
-  el('warnOk').className='btn '+(kind==='coil'?'info':'alarm');
+  el('warnOk').className='btn '+(kind==='coil'?'info':kind==='good'?'on':'alarm');
   el('warn').classList.toggle('side',kind==='coil');
   el('warn').hidden=false;warnOpen=true;setTimeout(()=>el('warnOk').focus(),0);
 }
@@ -807,7 +846,12 @@ function smoke(x,y,ms,big){
   g.innerHTML=h;el('fxLayer').appendChild(g);setTimeout(()=>g.remove(),ms);
 }
 function laterWarn(title,msg,ms){setTimeout(function go(){if(warnOpen&&modalKind==='warn'){setTimeout(go,1000);return;}showWarn(title,msg);},ms);}
+function screenFlash(){
+  const f=el('flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');
+  setTimeout(()=>f.classList.remove('go'),900);
+}
 function fuseBlown(k,I){
+  screenFlash();
   if(k==='120')smoke(186,160,7000);else smoke(80,512,7000);
   const short=k==='120'?I>5:I>20,rate=k==='120'?'½ A':'1 A',side=k==='120'?'120 V supply':'24 V control circuit';
   const msg=short
@@ -927,8 +971,10 @@ const NC=(r,p)=>({t:'nc',ref:`r${r}.p${p}.nc`,label:`CR${r}`});
 const COIL=r=>({t:'coil',ref:`r${r}`,label:`CR${r}`});
 const LP=i=>({t:'lamp',ref:`l${i}`,label:`LAMP ${i}`,letter:'WRGA'[i-1],n:i});
 const PAR=(...b)=>({par:b});
+let STATIC=false;
 function stateOf(ref){
   let m;if(!ref)return 0;
+  if(STATIC){if(ref==='f120'||ref==='f24')return 1;return /\.nc$/.test(ref)?1:0;}
   if(ref==='sup120')return S.fuse120&&lineFactor()>0?1:0;
   if(ref==='sup24')return S.fuse120&&S.fuse24&&!S.fault[6]&&lineFactor()>0?1:0;
   if(ref==='f120')return S.fuse120?1:0;
@@ -1062,7 +1108,7 @@ const natWs=seq=>seq.reduce((a,x)=>a+(x.par?natW(x):elW(x)),0);
 const natW=e=>Math.max(...e.par.map(natWs));
 const endsT=seq=>{const l=seq[seq.length-1];return !!l&&(l.t==='rail'||l.t==='gap'||(!!l.par&&l.par.every(endsT)));};
 /* One drawing: 120 V source at the top, power rungs, transformer T1, then the 24 V control rungs. */
-function ladderDiagram(power,control){
+function ladderDiagram(power,control,emp){
   const ROW=60,L=46;
   const need=Math.max(0,...power.map(natWs),...control.map(natWs))+L+62;
   const W=Math.max(490,need),Rr=W-48,cx=Math.round((L+Rr)/2);const out=[];
@@ -1070,7 +1116,7 @@ function ladderDiagram(power,control){
   const pbPos={};const dots=[];const dot=(x,y)=>dots.push(`<circle class="nd" cx="${x}" cy="${y}" r="4.8"/>`);
   const open=(x,y,right)=>{out.push(`<circle class="openmk" cx="${x}" cy="${y}" r="5"/>`);if(right)out.push(`<text class="opent" x="${x+9}" y="${y+4}">OPEN</text>`);};
   const elm=(e,x,y)=>{
-    const s=stateOf(e.ref),on=s>0?' on':'',nw=e.isNew?' new':'',lt=e.isNew?' newt':'';
+    const s=stateOf(e.ref),on=s>0&&!STATIC?' on':'',nw=e.isNew?' new':'',lt=e.isNew?' newt':'';
     if(e.t==='term'){line(x,y,x+30,y);out.push(`<text x="${x+30}" y="${y-14}" text-anchor="middle" class="lt${lt}">${e.label}</text>`);return;}
     if(e.t==='coil'){line(x,y,x+18,y);line(x+46,y,x+64,y);
       out.push(`<circle cx="${x+32}" cy="${y}" r="14" class="lw${on}${nw}" style="fill:${s?'color-mix(in srgb,var(--live) 30%,transparent)':'var(--panel)'}"/><text x="${x+32}" y="${y+4}" text-anchor="middle" class="lt in">${e.label}</text>`);return;}
@@ -1080,11 +1126,15 @@ function ladderDiagram(power,control){
     out.push(`<text x="${x+32}" y="${y-22}" text-anchor="middle" class="lt${lt}">${e.label}</text>`);
     if(e.t==='no'||e.t==='nc'){
       out.push(`<path class="lw${on}${nw}" d="M${x} ${y}H${x+26}M${x+26} ${y-11}V${y+11}M${x+38} ${y-11}V${y+11}M${x+38} ${y}H${x+64}"/>`);
-      if(e.t==='nc')out.push(`<path class="lw${on}${nw}" d="M${x+20} ${y+13}L${x+44} ${y-13}"/>`);return;}
+      if(e.t==='nc')out.push(s?`<path class="lw${on}${nw}" d="M${x+20} ${y+13}L${x+44} ${y-13}"/>`:`<path class="chg open" d="M${x+20} ${y+13}L${x+44} ${y-13}"/>`);
+      else if(s)out.push(`<path class="chg shut" d="M${x+20} ${y+13}L${x+44} ${y-13}"/>`);   // N.O. now closed: dotted slash
+      return;}
     out.push(`<path class="lw${on}${nw}" d="M${x} ${y}H${x+21}M${x+43} ${y}H${x+64}"/><circle class="lw${on}${nw}" cx="${x+24}" cy="${y}" r="3" style="fill:var(--panel)"/><circle class="lw${on}${nw}" cx="${x+40}" cy="${y}" r="3" style="fill:var(--panel)"/>`);
     {const n=+e.ref[2];(pbPos[n]=pbPos[n]||[]).push({x:x+32,l:x+16,r:x+48,y:e.t==='pbno'?y-9:y+5,ry:y,t:e.t});}
-    if(e.t==='pbno')out.push(`<path class="lw${on}${nw}" d="M${x+16} ${y-9}H${x+48}M${x+32} ${y-9}V${y-18}"/>`);
-    else out.push(`<path class="lw${on}${nw}" d="M${x+16} ${y+5}H${x+48}M${x+32} ${y+5}V${y-16}"/>`);
+    if(e.t==='pbno'){out.push(`<path class="lw${on}${nw}" d="M${x+16} ${y-9}H${x+48}M${x+32} ${y-9}V${y-18}"/>`);
+      if(s)out.push(`<path class="chg shut" d="M${x+16} ${y}H${x+48}"/>`);}                       // pressed: N.O. now closed
+    else if(s)out.push(`<path class="lw${on}${nw}" d="M${x+16} ${y+5}H${x+48}M${x+32} ${y+5}V${y-16}"/>`);
+    else out.push(`<path class="lw${nw}" d="M${x+32} ${y+5}V${y-16}"/><path class="chg open" d="M${x+16} ${y+5}H${x+48}"/>`); // pressed: N.C. now open
   };
   const startsLive=b=>b.length&&b[0].t!=='lgap';
   function lay(seq,x0,x1,y){
@@ -1125,7 +1175,7 @@ function ladderDiagram(power,control){
   out.push(`<text x="${L+14}" y="78" class="lt">½ A${f120?'':' · BLOWN'}</text>`);
   line(L,86,L,96,rp);
   out.push(`<text x="${L+14}" y="108" class="sect pwr">POWER CIRCUIT · 120 V</text>`);
-  let y=rungsAt(power,152,'No 120 V wires patched yet');
+  let y=rungsAt(power,152,emp?emp[0]:'No 120 V wires patched yet');
   // transformer T1: primary across L1 and N, secondary feeds X1 and X2
   const yp=y-10,yc=yp+18,ys=yp+38,wl=cx-44,wr=cx+44;
   line(L,96,L,yp,rp);line(Rr,96,Rr,yp,rp);
@@ -1147,7 +1197,7 @@ function ladderDiagram(power,control){
   line(fx,ys,L,ys,rc);line(wr,ys,Rr,ys,rc);
   out.push(`<text x="${L+14}" y="${ys+56}" class="sect ctl">CONTROL CIRCUIT · 24 V</text>`);
   const y0c=ys+96;
-  y=rungsAt(control,y0c,'No 24 V wires patched yet');
+  y=rungsAt(control,y0c,emp?emp[1]:'No 24 V wires patched yet');
   const h=y-ROW+34;
   line(L,ys,L,h-6,rc);line(Rr,ys,Rr,h-6,rc);
   out.push(`<text x="${L-10}" y="${ys+22}" text-anchor="end" class="railt">X1</text><text x="${Rr+10}" y="${ys+22}" class="railt">X2</text>`);
@@ -1234,6 +1284,161 @@ const PRESETS={
    seq:['Press FWD (PB3). CR2 energizes through PB4 N.C. and CR3 (pole 2) N.C., then seals in with CR2 (pole 1).','CR2 (pole 2) N.C. opens in the reverse circuit. Reverse is now blocked by the relay as well as the pushbutton.','Press REV. PB4 N.C. drops CR2. Only after CR2 drops out does CR2 (pole 2) N.C. reclose and let CR3 pick up.','STOP drops whichever relay is energized.'],
    tryit:['Turn on slow-motion relays and change direction. Watch CR3 wait for CR2\'s N.C. contact to reclose.','Compare a welded seal-in contact here with circuit 6.']}
 };
+/* ================= Diagram reading practice ================= */
+const rnd=n=>Math.floor(Math.random()*n);
+const pick=a=>a[rnd(a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const POLES={1:2,2:3,3:3};
+/* every diagram: control circuit = pushbuttons, relay contacts, coils; power circuit = relay contacts and lamps only */
+function mkBudget(){const cnt={};return {ok:r=>(cnt[r]||0)<POLES[r],c:(r,k)=>{cnt[r]=(cnt[r]||0)+1;return k==='no'?NO(r,1):NC(r,1);},left:r=>POLES[r]-(cnt[r]||0)};}
+function genL1(){
+  const r=pick([1,2,3]),p=pick([1,2,3,4]),lamps=shuffle([1,2,3,4]),B=mkBudget();
+  const control=[[rnd(4)===0?PBNC(p):PBNO(p),COIL(r)]];
+  const power=[[B.c(r,pick(['no','no','nc'])),LP(lamps[0])]];
+  if(rnd(2))power.push([B.c(r,power[0][0].t==='no'?'nc':'no'),LP(lamps[1])]);
+  return {title:'Level 1 · Basic',power,control};
+}
+function genL2(){
+  const [A,Bq]=shuffle([1,2,3]),pbs=shuffle([1,2,3,4]),lamps=shuffle([1,2,3,4]),B=mkBudget(),t=pick(['seal','logic','seq']);
+  const control=[],names={};let title='Level 2 · ';
+  if(t==='seal'){                       // start/stop relay A, relay B from its own pushbutton
+    names[pbs[0]]='STOP';names[pbs[1]]='START';
+    control.push([PBNC(pbs[0],`PB${pbs[0]} STOP`),PAR([PBNO(pbs[1],`PB${pbs[1]} START`)],[B.c(A,'no')]),COIL(A)]);
+    control.push([PBNO(pbs[2]),COIL(Bq)]);title+='Seal-in and a second relay';
+  }else if(t==='logic'){                // AND rung and OR rung
+    control.push([PBNO(pbs[0]),PBNO(pbs[1]),COIL(A)]);
+    control.push([PAR([PBNO(pbs[2])],[PBNO(pbs[3])]),COIL(Bq)]);title+='Series and parallel pushbuttons';
+  }else{                                // relay A seal-in, relay B only when A is running
+    names[pbs[0]]='STOP';names[pbs[1]]='START';
+    control.push([PBNC(pbs[0],`PB${pbs[0]} STOP`),PAR([PBNO(pbs[1],`PB${pbs[1]} START`)],[B.c(A,'no')]),COIL(A)]);
+    control.push([B.c(A,'no'),PBNO(pbs[2]),COIL(Bq)]);title+='Sequence control';
+  }
+  const power=[];let li=0;
+  if(B.ok(A))power.push([B.c(A,'no'),LP(lamps[li++])]);
+  if(B.ok(Bq))power.push([B.c(Bq,'no'),LP(lamps[li++])]);
+  if(B.ok(A)&&B.ok(Bq)&&rnd(2))power.push([B.c(A,pick(['no','nc'])),B.c(Bq,pick(['no','nc'])),LP(lamps[li++])]);
+  else if(B.ok(A))power.push([B.c(A,'nc'),LP(lamps[li++])]);
+  else if(B.ok(Bq))power.push([B.c(Bq,'nc'),LP(lamps[li++])]);
+  return {title,power,control,names};
+}
+function genL3(){
+  const [F,R]=shuffle([2,3]),[st,fw,rv,x]=shuffle([1,2,3,4]),lamps=shuffle([1,2,3,4]),B=mkBudget(),aux=rnd(2)===1;
+  const names={[st]:'STOP',[fw]:'FWD',[rv]:'REV'};
+  const f=[PAR([PBNO(fw,`PB${fw} FWD`)],[B.c(F,'no')]),PBNC(rv,`PB${rv}`)],r=[PAR([PBNO(rv,`PB${rv} REV`)],[B.c(R,'no')]),PBNC(fw,`PB${fw}`)];
+  if(aux){f.push(B.c(R,'nc'));r.push(B.c(F,'nc'));}
+  f.push(COIL(F));r.push(COIL(R));
+  const control=[[PBNC(st,`PB${st} STOP`),PAR(f,r)]];
+  if(aux)control.push([PBNO(x),COIL(1)]);                                          // CR1 from the spare pushbutton
+  else control.push([PAR([B.c(F,'no')],[B.c(R,'no')]),COIL(1)]);                    // CR1 = "running" relay, on in either direction
+  const power=[];let li=0;
+  if(B.ok(F))power.push([B.c(F,'no'),LP(lamps[li++])]);
+  if(B.ok(R))power.push([B.c(R,'no'),LP(lamps[li++])]);
+  if(B.ok(1))power.push([B.c(1,'no'),LP(lamps[li++])]);
+  if(B.ok(1)&&li<4)power.push([B.c(1,'nc'),LP(lamps[li++])]);
+  else if(B.ok(F)&&B.ok(R)&&li<4)power.push([B.c(F,'nc'),B.c(R,'nc'),LP(lamps[li++])]);
+  return {title:'Level 3 · '+(aux?'Pushbutton and auxiliary-contact interlock':'Pushbutton interlock with running relay'),power,control,names};
+}
+function addRail(seq){const l=seq[seq.length-1];if(!l)return seq;if(l.par)l.par.forEach(addRail);else if(l.t==='coil'||l.t==='lamp')seq.push({t:'rail'});return seq;}
+const GEN={1:genL1,2:genL2,3:genL3};
+let CH=null;
+/* logic of the target diagram: which loads are energized for given pushbutton presses and relay states */
+function rungLoads(seq,live,st,out){
+  for(let i=0;i<seq.length;i++){const e=seq[i],last=i===seq.length-1;
+    if(e.par){if(last){e.par.forEach(b=>rungLoads(b,live,st,out));return;}
+      live=live&&e.par.some(b=>chainClosed(b,st));continue;}
+    if(e.t==='coil'||e.t==='lamp'){if(live)out.add(e.ref);continue;}
+    live=live&&contactClosed(e,st);
+  }
+}
+function chainClosed(seq,st){return seq.every(e=>e.par?e.par.some(b=>chainClosed(b,st)):contactClosed(e,st));}
+function contactClosed(e,st){let m;if(!e.ref)return true;
+  if((m=e.ref.match(/^pb(\d)\.(no|nc)$/))){const p=st.pb.has(+m[1]);return m[2]==='no'?p:!p;}
+  if((m=e.ref.match(/^r(\d)\.p\d\.(no|nc)$/))){const en=st.en[+m[1]];return m[2]==='no'?en:!en;}
+  return true;}
+function targetStep(spec,pb,en){
+  en={...en};let stable=false;
+  for(let k=0;k<20&&!stable;k++){const out=new Set();spec.control.forEach(r=>rungLoads(r,true,{pb,en},out));
+    const nx={1:out.has('r1'),2:out.has('r2'),3:out.has('r3')};stable=[1,2,3].every(r=>nx[r]===en[r]);en=nx;}
+  const out=new Set();spec.power.forEach(r=>rungLoads(r,true,{pb,en},out));
+  return {en,lamps:[1,2,3,4].map(i=>out.has('l'+i)),chatter:!stable};
+}
+/* electrical model of the student's board for the same presses */
+function boardStep(pb,en){
+  for(let i=1;i<=4;i++){S.pb[i].held=false;S.pb[i].locked=pb.has(i);}
+  for(const r of [1,2,3])S.r[r].en=en[r];
+  let stable=false,R=null,prob=null;
+  for(let k=0;k<20&&!stable;k++){R=solve();
+    if(Math.abs(R.i24)>1)prob='short24';if(Math.abs(R.i120)>0.5)prob=Math.abs(R.i120)>5?'short120':'over120';
+    stable=true;for(const r of [1,2,3]){const V=R.coilV[r];if(V>36)prob=prob||('coilhv'+r);
+      const nx=V>=20.4?true:V<13.2?false:S.r[r].en;if(nx!==S.r[r].en){stable=false;}S.r[r].en=nx;}
+    if(prob)break;}
+  R=solve();
+  return {en:{1:S.r[1].en,2:S.r[2].en,3:S.r[3].en},lamps:[1,2,3,4].map(i=>!lampOpen(i)&&R.lampV[i]>=96),chatter:!stable,prob};
+}
+function usedPBs(spec){const s=new Set();const w=q=>q.forEach(e=>{if(e.par)e.par.forEach(w);else if(e.ref){const m=e.ref.match(/^pb(\d)/);if(m)s.add(+m[1]);}});[...spec.power,...spec.control].forEach(w);return [...s].sort();}
+function testSteps(spec){
+  const P=usedPBs(spec),st=[[]];
+  P.forEach(p=>{st.push([p]);st.push([]);});
+  P.forEach(p=>P.forEach(q=>{if(p!==q){st.push([p]);st.push([p,q]);st.push([q]);st.push([]);}}));
+  return st;
+}
+const descPB=(a,first)=>a.length?a.map(p=>'PB'+p+(CH.spec.names&&CH.spec.names[p]?' ('+CH.spec.names[p]+')':'')).join(' + ')+' held':first?'nothing pressed':'all buttons released';
+function checkWiring(){
+  if(!CH)return;CH.tries++;
+  if(!S.cords.length){showChResult(false,'<p>No cords are patched yet. Wire the circuit shown in the diagram, then check again.</p>');return;}
+  const save={power:S.power,outage:S.outage,dip:S.dip,line:S.line,fuse120:S.fuse120,fuse24:S.fuse24,fault:S.fault.slice(),
+    pb:JSON.parse(JSON.stringify(S.pb)),r:[1,2,3].map(r=>({en:S.r[r].en,burnt:S.r[r].burnt}))};
+  Object.assign(S,{power:true,outage:false,dip:0,line:100,fuse120:true,fuse24:true});S.fault.fill(false);for(const r of [1,2,3])S.r[r].burnt=false;
+  const steps=testSteps(CH.spec);let tEn={1:false,2:false,3:false},bEn={1:false,2:false,3:false},fail=null;
+  try{
+    for(let i=0;i<steps.length&&!fail;i++){const pb=new Set(steps[i]);
+      const t=targetStep(CH.spec,pb,tEn),b=boardStep(pb,bEn);tEn=t.en;bEn=b.en;
+      if(b.prob){fail={i,why:b.prob};break;}
+      const diffs=[];
+      for(let L=1;L<=4;L++)if(t.lamps[L-1]!==b.lamps[L-1])diffs.push(`Lamp ${L} should be <b>${t.lamps[L-1]?'ON':'OFF'}</b>, but on your board it is <b>${b.lamps[L-1]?'ON':'OFF'}</b>.`);
+      for(const r of [1,2,3])if(t.en[r]!==b.en[r])diffs.push(`CR${r} should be <b>${t.en[r]?'energized':'de-energized'}</b>, but on your board it is <b>${b.en[r]?'energized':'de-energized'}</b>.`);
+      if(t.chatter!==b.chatter)diffs.push(b.chatter?'Your relay chatters here. Check the holding contact is N.O.':'');
+      if(diffs.length)fail={i,diffs:diffs.filter(Boolean)};
+    }
+  } finally {
+    Object.assign(S,{power:save.power,outage:save.outage,dip:save.dip,line:save.line,fuse120:save.fuse120,fuse24:save.fuse24});
+    save.fault.forEach((v,i)=>S.fault[i]=v);for(let i=1;i<=4;i++)Object.assign(S.pb[i],save.pb[i]);
+    for(const r of [1,2,3])Object.assign(S.r[r],save.r[r-1]);
+  }
+  if(!fail){
+    showChResult(true,`<p><b class="okc">Correct!</b> Your wiring matches the diagram in all ${steps.length} test steps${CH.tries>1?` (attempt ${CH.tries})`:''}.</p><p>Press the pushbuttons to watch it run, or get a new random diagram.</p>`);
+    log(`Diagram reading: wiring correct on attempt ${CH.tries}.`,'on');
+    showModal('good','Wiring correct',`<p>Your board matches the ladder diagram in all ${steps.length} test steps.</p><p>Press the pushbuttons to watch the circuit run.</p>`);
+    return;}
+  const from=Math.max(0,fail.i-2),seqTxt=steps.slice(from,fail.i+1).map((x,j)=>descPB(x,from+j===0)).join(' → ');
+  let body;
+  if(fail.why){const W={short24:'Your wiring shorts the 24 V control circuit (X1 to X2) and would blow the 1 A fuse.',short120:'Your wiring shorts the 120 V supply (L1 to N) and would blow the ½ A fuse.',over120:'Your wiring overloads the 120 V supply.'};
+    body=`<p><b class="badc">Not yet.</b> ${W[fail.why]||`A 24 V relay coil (CR${fail.why.slice(-1)}) is wired across 120 V and would burn out.`}</p><p>It happens with: ${seqTxt}.</p>`;}
+  else body=`<p><b class="badc">Not yet.</b> ${fail.i===0?'With':'After'} ${seqTxt}:</p>`+fail.diffs.map(d=>`<p>• ${d}</p>`).join('');
+  body+=`<p class="hint">Attempt ${CH.tries}. Fix the wiring and check again.</p>`;
+  showChResult(false,body);log(`Diagram reading: attempt ${CH.tries} did not match the diagram.`,'bad');
+}
+function showChResult(ok,html){const r=el('chResult');r.hidden=false;r.className='chres '+(ok?'ok':'bad');r.innerHTML=html;}
+function renderChallenge(){
+  if(!CH){el('chBody').hidden=true;return;}
+  el('chBody').hidden=false;el('chTitle').textContent='Wire this circuit: '+CH.spec.title;
+  STATIC=true;try{el('chDiagram').innerHTML=ladderDiagram(CH.spec.power,CH.spec.control,['No power circuit in this diagram','No control circuit in this diagram: leave the 24 V side unwired']);}finally{STATIC=false;}
+}
+function applyHide(){const card=document.querySelector('.card.ladder');if(card)card.hidden=!!(CH&&el('chHide').checked);}
+function newChallenge(){
+  const lv=el('chLevel').value;
+  let spec;for(let k=0;k<20;k++){spec=GEN[lv]();if(spec.power.length)break;}
+  spec.power.forEach(addRail);spec.control.forEach(addRail);
+  CH={spec,tries:0,lv};
+  loadPreset('blank',true);
+  el('about').textContent='Diagram reading practice: wire the ladder diagram shown in the Diagram reading panel.';
+  el('chCheck').disabled=false;el('chEnd').disabled=false;el('chResult').hidden=true;
+  renderChallenge();applyHide();log(`Diagram reading: new ${spec.title.toLowerCase()} diagram. Board cleared.`,'');
+}
+el('chNew').addEventListener('click',newChallenge);
+el('chCheck').addEventListener('click',checkWiring);
+el('chEnd').addEventListener('click',()=>{CH=null;el('chCheck').disabled=true;el('chEnd').disabled=true;renderChallenge();applyHide();log('Diagram reading practice ended.','');});
+el('chHide').addEventListener('change',applyHide);
 const ORDER=['blank','basics','relay','four','uvr','uvp','interlock','double'];
 function loadPreset(key,silent,step){
   const P=PRESETS[key];S.preset=key;S.modified=false;S.sel=null;pending=null;drawTemp(null);
